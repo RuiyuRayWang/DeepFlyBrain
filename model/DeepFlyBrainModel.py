@@ -11,36 +11,34 @@ class DeepFlyBrainModel(nn.Module):
         self.dropout_1 = nn.Dropout(0.5)
         self.time_distributed_1 = nn.Linear(1024, 128)
         self.lstm_1 = nn.LSTM(input_size=128, hidden_size=128, num_layers=1, batch_first=True, dropout=0.2, bidirectional=True)
-        # self.dropout_2 = nn.Dropout(0.5)
-        # self.flatten = nn.Flatten()
-        # self.dense_2 = nn.Linear(128 * 2 * 41, 256)  # Adjust input size based on the output of LSTM
-        # self.dropout_3 = nn.Dropout(0.5)
-        # self.dense_3 = nn.Linear(256, 81)
+        self.dropout_2 = nn.Dropout(0.5)
+        self.flatten_1 = nn.Flatten()
+        self.dense_2 = nn.Linear(128 * 2 * 41, 256)  # Adjust input size based on the output of LSTM
+        self.dropout_3 = nn.Dropout(0.5)
+        self.dense_3 = nn.Linear(256, 81)
+        self.lambda_1 = nn.Identity()  # Placeholder for Lambda layer
+        self.lambda_2 = nn.Identity()  # Placeholder for Lambda layer
+
     def forward(self, x):
+        x = self.lambda_1(x)
         x = x.permute(0, 2, 1)
         x = F.relu(self.conv1d_1(x))
         x = self.max_pooling1d_1(x)
         x = self.dropout_1(x)
+        x = self.lambda_2(x)
         x = x.permute(0, 2, 1)
         x = F.relu(self.time_distributed_1(x))
         x, _ = self.lstm_1(x)
-        # x = self.dropout_2(x)
-        # x = self.flatten(x)
-        # x = F.relu(self.dense_2(x))
-        # x = self.dropout_3(x)
-        # x = torch.sigmoid(self.dense_3(x))
+        x = self.dropout_2(x)
+        x = self.flatten_1(x)
+        x = F.relu(self.dense_2(x))
+        x = self.dropout_3(x)
+        x = torch.sigmoid(self.dense_3(x))
         return x
 
-def generate_input_data():
-    """
-    Generates input data for the model.
-    The size of the input object is (500, 4), representing a onehot encoded DNA sequence of length 500 bp.
-    """
-    # Generate random onehot encoded DNA sequence
-    input_data = np.random.randint(0, 2, (500, 4))
-    return input_data
-
 # Example usage:
+# from utils import util
+# 
 # model = DeepFlyBrainModel()
-# X = torch.tensor(generate_input_data(), dtype=torch.float32).unsqueeze(0)  # Add batch dimension
+# X = torch.tensor(util.generate_input_data(), dtype=torch.float32).unsqueeze(0)  # Add batch dimension
 # output = model(X)
